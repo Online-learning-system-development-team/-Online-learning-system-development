@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.exam.mapper.ExamQuestionBankMapper">
+    
+    <resultMap type="ExamQuestionBank" id="ExamQuestionBankResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="createUser"    column="create_user"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="modifyUser"    column="modify_user"    />
+        <result property="modifyTime"    column="modify_time"    />
+    </resultMap>
+
+
+
+    <sql id="selectExamQuestionBankVo">
+        select id, name, create_user, create_time, modify_user, modify_time from exam_question_bank
+    </sql>
+
+
+    <select id="selectBankByQuestionIdList" parameterType="java.lang.Long" resultType="com.ruoyi.exam.domain.ExamQuestionBank">
+       SELECT a.id,b.`name` FROM exam_question_bank_questions
+as a  LEFT JOIN exam_question_bank as b
+on a.question_bank_id = b.id
+where
+a.examination_question_id = #{questionId}
+    </select>
+
+    <select id="selectExamQuestionBankList" parameterType="ExamQuestionBank" resultMap="ExamQuestionBankResult">
+        <include refid="selectExamQuestionBankVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="createUser != null  and createUser != ''"> and create_user = #{createUser}</if>
+            <if test="modifyUser != null  and modifyUser != ''"> and modify_user = #{modifyUser}</if>
+            <if test="modifyTime != null "> and modify_time = #{modifyTime}</if>
+        </where>
+    </select>
+
+    <select id="selectExamQuestionBankListByRole" parameterType="long" resultMap="ExamQuestionBankResult">
+        SELECT  b.id,  b.name, b.create_user, b.create_time, b.modify_user, b.modify_time  FROM exam_question_bank as b   JOIN
+        (SELECT r.question_bank_id  FROM exam_question_bank_role as r
+        where
+        r.role_id = #{roleId}) as a
+        on b.id = a.question_bank_id
+    </select>
+
+
+
+    <select id="selectExamBankQuestionCountList" parameterType="com.ruoyi.exam.vo.ExamBankQuestionCountVo" resultType="com.ruoyi.exam.vo.ExamBankQuestionCountVo">
+        select bank.id, bank.name,
+ (SELECT count(*) FROM
+exam_question_bank_questions as b
+join exam_questions as q
+on q.id = b.examination_question_id
+where b.question_bank_id = bank.id
+and  q.type = "select") as selectCount,
+(SELECT count(*) FROM
+exam_question_bank_questions as b
+join exam_questions as q
+on q.id = b.examination_question_id
+where b.question_bank_id = bank.id
+and  q.type = "selects" ) as selectsCount,
+ (SELECT count(*) FROM
+exam_question_bank_questions as b
+join exam_questions as q
+on q.id = b.examination_question_id
+where b.question_bank_id = bank.id
+ and  q.type = "verdict") as verdictCount,
+ (SELECT count(*) FROM
+exam_question_bank_questions as b
+join exam_questions as q
+on q.id = b.examination_question_id
+where b.question_bank_id = bank.id
+and  q.type = "answer" ) as answerCount
+from
+exam_question_bank as bank
+JOIN exam_question_bank_role as role
+	on bank.id = role.question_bank_id
+	where role.role_id = #{userId}
+    </select>
+    
+    <select id="selectExamQuestionBankById" parameterType="Long" resultMap="ExamQuestionBankResult">
+        <include refid="selectExamQuestionBankVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertExamQuestionBank" parameterType="ExamQuestionBank" useGeneratedKeys="true" keyProperty="id">
+        insert into exam_question_bank
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">name,</if>
+            <if test="createUser != null">create_user,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="modifyUser != null">modify_user,</if>
+            <if test="modifyTime != null">modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">#{name},</if>
+            <if test="createUser != null">#{createUser},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="modifyUser != null">#{modifyUser},</if>
+            <if test="modifyTime != null">#{modifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateExamQuestionBank" parameterType="ExamQuestionBank">
+        update exam_question_bank
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="createUser != null">create_user = #{createUser},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="modifyUser != null">modify_user = #{modifyUser},</if>
+            <if test="modifyTime != null">modify_time = #{modifyTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteExamQuestionBankById" parameterType="Long">
+        delete from exam_question_bank where id = #{id}
+    </delete>
+
+    <delete id="deleteExamQuestionBankByIds" parameterType="String">
+        delete from exam_question_bank where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
