@@ -11,7 +11,6 @@ import com.ruoyi.quartz.domain.SysJob;
 /**
  * 任务执行工具
  *
- * @author ruoyi
  */
 public class JobInvokeUtil
 {
@@ -65,7 +64,6 @@ public class JobInvokeUtil
     /**
      * 校验是否为为class包名
      * 
-     * @param str 名称
      * @return true是 false否
      */
     public static boolean isValidClassName(String invokeTarget)
